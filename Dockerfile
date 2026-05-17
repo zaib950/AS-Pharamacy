@@ -1,15 +1,20 @@
 FROM php:8.2-apache
 
-RUN apt-get update && apt-get install -y apache2
+# Install MySQLi extension
+RUN docker-php-ext-install mysqli && docker-php-ext-enable mysqli
 
-RUN a2dismod mpm_event || true
-RUN a2dismod mpm_worker || true
-RUN a2enmod mpm_prefork
-
-RUN docker-php-ext-install mysqli pdo pdo_mysql
-
+# Copy application files
 COPY . /var/www/html/
 
-RUN chown -R www-data:www-data /var/www/html
+# Ensure appropriate permissions
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html
 
 EXPOSE 80
+
+# Fix the MPM error and map Apache to listen on the Railway provided PORT
+CMD bash -c "a2dismod mpm_event mpm_worker || true; \
+    a2enmod mpm_prefork || true; \
+    sed -i \"s/Listen 80/Listen ${PORT:-80}/g\" /etc/apache2/ports.conf; \
+    sed -i \"s/:80/:${PORT:-80}/g\" /etc/apache2/sites-available/000-default.conf; \
+    apache2-foreground"
