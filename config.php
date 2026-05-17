@@ -3,14 +3,14 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 // Railway database environment variables
-$railway_host = getenv('MYSQLHOST');
+$railway_host = getenv('MYSQL_HOST') ?: getenv('MYSQLHOST');
 
 if ($railway_host) {
-    $host = getenv('MYSQLHOST');
-    $user = getenv('MYSQLUSER');
-    $pass = getenv('MYSQLPASSWORD');
-    $db_name = getenv('MYSQLDATABASE');
-    $port = getenv('MYSQLPORT');
+    $host = $railway_host;
+    $user = getenv('MYSQL_USER') ?: getenv('MYSQLUSER');
+    $pass = getenv('MYSQL_PASSWORD') ?: getenv('MYSQLPASSWORD');
+    $db_name = getenv('MYSQL_DATABASE') ?: getenv('MYSQLDATABASE');
+    $port = getenv('MYSQL_PORT') ?: getenv('MYSQLPORT');
     $conn = new mysqli($host, $user, $pass, $db_name, $port);
 } else {
     // Local XAMPP database credentials
